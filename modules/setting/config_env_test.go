@@ -115,3 +115,20 @@ key = old
 	EnvironmentToConfig(cfg, []string{"GITEA__sec__key__FILE=" + tmpFile})
 	assert.Equal(t, "value-from-file\n", cfg.Section("sec").Key("key").String())
 }
+
+func TestEnvironmentToConfig27541(t *testing.T) {
+	cfg, _ := NewConfigProviderFromData("")
+
+	changed := EnvironmentToConfig(cfg, nil)
+	assert.False(t, changed)
+
+	cfg, err := NewConfigProviderFromData(`
+[sec]
+key = some
+`)
+	assert.NoError(t, err)
+
+	changed = EnvironmentToConfig(cfg, []string{"GITEA__sec_0X2E_sub__key=some"})
+	assert.Equal(t, "some", cfg.Section("sec.sub").Key("key").String())
+	assert.True(t, changed)
+}
